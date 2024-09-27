@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Awareness - Quick Survey</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff; /* White background */
+            color: #000000; /* Black text */
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        h1 {
+            background-color: #ffffff; /* White background */
+            color: #000000; /* Black text */
+            margin: 0;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            position: fixed; /* Fixed position */
+            top: 0; /* Stick to the top */
+            left: 0;
+            right: 0;
+            z-index: 10; /* On top of other content */
+        }
+
+        .intro-message {
+            font-size: 1.8em;
+            color: #000000; /* Black */
+            opacity: 0; /* Initially hidden */
+            transition: opacity 1s ease-in-out;
+            margin-bottom: 20px;
+            margin-top: 120px; /* Adjusted margin to ensure visibility */
+            text-align: center;
+            position: relative; /* Relative positioning */
+        }
+
+        .survey-container {
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ffffff; /* White background */
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            transition: opacity 0.5s;
+            opacity: 0;
+            overflow: hidden; /* Prevent scrolling */
+            margin-top: 100px; /* Margin to account for the fixed header */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Center items vertically */
+        }
+
+        .question {
+            font-size: 2em;
+            color: #000000; /* Black */
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .option {
+            background-color: #1976d2; /* Vibrant blue */
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 400px; /* Limit the width of options */
+            transition: background-color 0.3s, transform 0.3s;
+            display: inline-block;
+        }
+
+        .option:hover {
+            background-color: #1565c0; /* Darker blue on hover */
+            transform: translateY(-2px);
+        }
+
+        .thank-you-message {
+            display: none;
+            color: #388e3c; /* Green */
+            font-size: 2em;
+            margin-top: 20px;
+            text-align: center;
+            position: fixed; /* Fixed positioning */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Offset to center */
+            z-index: 20; /* On top of everything */
+            backdrop-filter: blur(5px); /* Blur background */
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+            opacity: 0; /* Initially hidden */
+            transition: opacity 1s ease-in-out; /* Fade-in effect */
+        }
+
+        .redirect-message {
+            color: #ff8f00; /* Orange */
+            font-size: 1.5em;
+            display: none;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+            .question {
+                font-size: 1.5em;
+            }
+            .option {
+                font-size: 1.2em;
+                padding: 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Drug Awareness - Quick Survey</h1>
+
+<div class="intro-message" id="introMessage"></div>
+
+<div class="survey-container" id="surveyContainer">
+    <div class="question" id="questionText"></div>
+    <div id="optionsContainer"></div>
+</div>
+<div class="thank-you-message" id="thankYouMessage">Thank you for sharing your thoughts!<br> You're being redirected to the game ...</div>
+<div class="redirect-message" id="redirectMessage">You're being redirected to the game...</div>
+
+<script>
+    const messages = [
+        "Hi there!",
+        "Before we continue to the next game,",
+        "answer some questions for us."
+    ];
+
+    const questions = [
+        {
+            text: "Have you or anyone close to you encountered drug use?",
+            options: [
+                "Yes, I have encountered it.",
+                "Yes, someone close to me has.",
+                "No, I have not.",
+            ]
+        },
+        {
+            text: "What type of drug was involved?",
+            options: [
+                "Alcohol",
+                "Marijuana",
+                "Prescription Drugs",
+                "Hard Drugs",
+                "Not applicable"
+            ]
+        },
+        {
+            text: "How did they (or you) come out of it?",
+            options: [
+                "Support from family/friends",
+                "Professional help",
+                "Personal determination",
+                "Still struggling",
+            ]
+        },
+        {
+            text: "What is the biggest lesson learned from this encounter?",
+            options: [
+                "Seek help when needed",
+                "Stay away from drugs",
+                "Communicate with loved ones",
+                "No lesson learned"
+            ]
+        },
+        {
+            text: "How did the encounter affect your life?",
+            options: [
+                "Positively, I learned a lot",
+                "Negatively, it was a tough experience",
+                "It didn't affect me much",
+                "I prefer not to say"
+            ]
+        },
+        {
+            text: "Would you be willing to support someone dealing with drug issues?",
+            options: [
+                "Yes, definitely",
+                "Maybe, it depends",
+                "No, I don't feel comfortable",
+                "I have already supported someone"
+            ]
+        },
+        {
+            text: "Have you sought information about drug abuse before?",
+            options: [
+                "Yes, I have done research",
+                "No, I haven't",
+                "I have received information through school or community programs"
+            ]
+        },
+        {
+            text: "What is your preferred method of learning about such topics?",
+            options: [
+                "Workshops/Seminars",
+                "Online resources",
+                "Talks with professionals",
+                "Reading articles/books"
+            ]
+        },
+        {
+            text: "Would you recommend resources on drug awareness to others?",
+            options: [
+                "Yes, absolutely",
+                "Maybe, if I find the right ones",
+                "No, I don't think they are useful"
+            ]
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+
+    const introMessage = document.getElementById('introMessage');
+    const surveyContainer = document.getElementById('surveyContainer');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const thankYouMessage = document.getElementById('thankYouMessage');
+    const redirectMessage = document.getElementById('redirectMessage');
+
+    function showIntro() {
+        let messageIndex = 0;
+
+        function displayNextMessage() {
+            if (messageIndex < messages.length) {
+                introMessage.innerText = messages[messageIndex];
+                introMessage.style.opacity = '1'; // Fade in
+                setTimeout(() => {
+                    introMessage.style.opacity = '0'; // Fade out
+                }, 2000); // Display for 2 seconds
+                setTimeout(() => {
+                    messageIndex++;
+                    displayNextMessage();
+                }, 3000); // Wait for fade out before displaying next message
+            } else {
+                setTimeout(() => {
+                    introMessage.style.display = 'none'; // Hide after last message
+                    showSurvey();
+                }, 1000); // Wait before showing survey
+            }
+        }
+
+        displayNextMessage();
+    }
+
+    function showSurvey() {
+        surveyContainer.style.display = 'flex'; // Show survey container
+        surveyContainer.style.opacity = '1'; // Fade in
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if (currentQuestionIndex < questions.length) {
+            const question = questions[currentQuestionIndex];
+            questionText.innerText = question.text;
+            optionsContainer.innerHTML = ''; // Clear previous options
+
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.innerText = option;
+                button.onclick = () => handleOptionClick();
+                optionsContainer.appendChild(button);
+            });
+
+            questionText.style.opacity = '1'; // Fade in question
+        } else {
+            showThankYouMessage();
+        }
+    }
+
+    function handleOptionClick() {
+        currentQuestionIndex++;
+        showQuestion();
+    }
+
+    function showThankYouMessage() {
+        thankYouMessage.style.display = 'block'; // Show thank you message
+        thankYouMessage.style.opacity = '1'; // Fade in
+        setTimeout(() => {
+            thankYouMessage.style.opacity = '0'; // Fade out after some time
+        }, 2000);
+        setTimeout(() => {
+            showRedirectMessage();
+        }, 3000); // Wait before showing redirect message
+    }
+
+    function showRedirectMessage() {
+        redirectMessage.style.display = 'block'; // Show redirect message
+        redirectMessage.style.opacity = '1'; // Fade in
+        setTimeout(() => {
+            window.location.href = "/game3"; // Redirect to the /game3 route
+        }, 2000); // Redirect after 5 seconds
+    }
+
+    // Start the intro
+    showIntro();
+</script>
+</body>
+</html>

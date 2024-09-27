@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Hub</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        .game-tile {
+            margin: 20px;
+            padding: 30px;
+            background-color: #ff69b4; /* Hot pink */
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.5);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .game-tile:hover {
+            transform: scale(1.05); /* Grow on hover */
+        }
+        .start-button {
+            background-color: #32CD32; /* Lime Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 15px 30px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .start-button:hover {
+            background-color: #28a745; /* Darker green on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Game Hub!</h1>
+        <button class="start-button" onclick="startGame()">Start Game</button>
+    </div>
+
+    <script>
+        // Function to navigate to the first game
+        function startGame() {
+            window.location.href = 'game1'; // Redirect to the first game
+        }
+    </script>
+</body>
+</html>

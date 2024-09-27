@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game: Avoid Drugs, Collect Antidotes!</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #e0e7ff;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            height: 100vh;
+            justify-content: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #1e3a8a; /* Dark blue color */
+        }
+
+        #game-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            border: 2px solid #1e3a8a; /* Dark blue border */
+            background-color: #ffffff; /* White background for the game */
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            width: 200px; /* Width for the circular layout */
+            height: 200px; /* Height for the circular layout */
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        button {
+            width: 60px; /* Fixed width for buttons */
+            height: 60px; /* Fixed height for buttons */
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #3b82f6; /* Blue background */
+            color: white;
+            border: none;
+            border-radius: 50%; /* Circular buttons */
+            transition: background-color 0.3s, transform 0.2s;
+            position: absolute; /* Absolute positioning for circular layout */
+        }
+
+        button:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+            transform: scale(1.1); /* Slightly enlarge on hover */
+        }
+
+        /* Positioning buttons in a circular layout */
+        #upButton { top: 10px; left: 50%; transform: translateX(-50%); }
+        #downButton { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        #leftButton { left: 10px; top: 50%; transform: translateY(-50%); }
+        #rightButton { right: 10px; top: 50%; transform: translateY(-50%); }
+
+        .game-over {
+            display: none;
+            font-size: 20px;
+            color: red;
+            margin-top: 20px;
+        }
+
+        #score, #timer {
+            font-size: 20px;
+            margin-top: 10px;
+            color: #1e3a8a; /* Dark blue color for score */
+        }
+
+        #goal {
+            font-size: 20px;
+            color: green; /* Green color for goal */
+            margin-top: 10px;
+        }
+
+        #popupMessage {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 0, 0, 0.8); /* Semi-transparent red background */
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            text-align: center;
+            z-index: 100; /* Ensure it's above other elements */
+        }
+
+        /* Winning message styles */
+        #winningMessage {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 128, 0, 0.8); /* Semi-transparent green background */
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 28px;
+            text-align: center;
+            z-index: 100; /* Ensure it's above other elements */
+            opacity: 0; /* Start invisible for fade-in effect */
+            transition: opacity 1s; /* Smooth transition for fade-in */
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game: Avoid Drugs, Collect Antidotes!</h1>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="popupMessage"></div> <!-- Popup message div -->
+        <div id="winningMessage">You've made it! Redirecting to the next game...</div> <!-- Winning message div -->
+    </div>
+    <div class="button-container">
+        <button id="upButton">↑</button>
+        <button id="leftButton">←</button>
+        <button id="downButton">↓</button>
+        <button id="rightButton">→</button>
+    </div>
+    <div id="goal">Goal: Collect 5 Antidotes</div>
+    <div id="score">Score: 0</div>
+    <div id="timer">Time: 0s</div>
+    <div class="game-over" id="gameOverMessage">Game Over! You hit something!</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 400;
+        canvas.height = 400;
+
+        let snake = [{ x: 200, y: 200 }];
+        let direction = { x: 0, y: 0 };
+        let antidote = spawnAntidote();
+        let drugs = spawnDrugs(5);
+        let gameOver = false;
+        let gameStarted = false; // Flag to check if the game has started
+        let score = 0; // Initialize score
+        let requiredAntidotes = 5; // Number of antidotes to collect
+        let speed = 150; // Initial speed for movement (in milliseconds)
+        let lastTime = 0;
+        let timer = 0; // Timer for tracking time
+        let timerInterval; // Timer interval reference
+
+        // Array of funny rude messages
+        const rudeMessages = [
+            "Oops! Did you forget to pay attention, genius?",
+            "Well, that was a stupid move!",
+            "Congratulations! You played yourself!",
+            "Is that how you dodge in real life?",
+            "Nice try! But you still suck!",
+            "Did you really think that would work?",
+            "Hitting stuff is your specialty, huh?",
+            "You missed the memo, didn't you?"
+        ];
+
+        function spawnAntidote() {
+            return {
+                x: Math.floor(Math.random() * (canvas.width / 20)) * 20,
+                y: Math.floor(Math.random() * (canvas.height / 20)) * 20,
+            };
+        }
+
+        function spawnDrugs(count) {
+            const drugArray = [];
+            for (let i = 0; i < count; i++) {
+                drugArray.push({
+                    x: Math.floor(Math.random() * (canvas.width / 20)) * 20,
+                    y: Math.floor(Math.random() * (canvas.height / 20)) * 20,
+                });
+            }
+            return drugArray;
+        }
+
+        function drawSnake() {
+            ctx.fillStyle = 'green';
+            for (const segment of snake) {
+                ctx.beginPath();
+                ctx.arc(segment.x + 10, segment.y + 10, 10, 0, Math.PI * 2); // Draw circle segments
+                ctx.fill();
+            }
+        }
+
+        function drawAntidote() {
+            ctx.font = '20px Arial';
+            ctx.fillStyle = 'blue';
+            ctx.fillText('🍾', antidote.x + 5, antidote.y + 15); // Draw antidote symbol as potion
+        }
+
+        function drawDrugs() {
+            ctx.font = '20px Arial';
+            ctx.fillStyle = 'red';
+            for (const drug of drugs) {
+                ctx.fillText('🚬', drug.x + 5, drug.y + 15); // Draw drug symbol
+            }
+        }
+
+        function update() {
+            if (gameOver) return;
+
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+            // Wrap around logic for walls
+            if (head.x < 0) head.x = canvas.width - 20;
+            else if (head.x >= canvas.width) head.x = 0;
+            if (head.y < 0) head.y = canvas.height - 20;
+            else if (head.y >= canvas.height) head.y = 0;
+
+            // Check for collision with drugs
+            for (const drug of drugs) {
+                if (head.x === drug.x && head.y === drug.y) {
+                    gameOver = true;
+                    displayPopupMessage(); // Show popup message
+                    clearInterval(timerInterval); // Stop the timer
+                    return;
+                }
+            }
+
+            // Check for collision with antidote
+            if (head.x === antidote.x && head.y === antidote.y) {
+                snake.unshift(head);
+                antidote = spawnAntidote();
+                score += 1; // Increase score when collecting an antidote
+                document.getElementById("score").innerText = `Score: ${score}`; // Update score display
+
+                // Check if the goal is reached
+                if (score >= requiredAntidotes) {
+                    displayWinningMessage(); // Display winning message
+                    return;
+                }
+            } else {
+                snake.unshift(head);
+                snake.pop(); // Remove last segment
+            }
+        }
+
+        function displayWinningMessage() {
+            const winningMessage = document.getElementById('winningMessage');
+            winningMessage.style.display = 'block'; // Show the winning message
+            winningMessage.style.opacity = 1; // Set opacity to 1 for fade-in
+            setTimeout(() => {
+                winningMessage.style.opacity = 0; // Fade-out effect
+                setTimeout(() => {
+                    window.location.href = '/game5'; // Redirect to the next game
+                }, 1000); // Wait for fade-out before redirecting
+            }, 2000); // Display message for 2 seconds
+        }
+
+        function displayPopupMessage() {
+            const popupMessage = document.getElementById('popupMessage');
+            const randomMessage = rudeMessages[Math.floor(Math.random() * rudeMessages.length)];
+            popupMessage.innerText = randomMessage;
+            popupMessage.style.display = 'block'; // Show popup message
+            setTimeout(() => {
+                popupMessage.style.display = 'none'; // Hide popup message after 2 seconds
+            }, 2000);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSnake();
+            drawAntidote();
+            drawDrugs();
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameStarted) {
+                lastTime = timestamp;
+                gameStarted = true; // Set the flag to true when the game starts
+                timerInterval = setInterval(() => {
+                    timer += 1; // Increment the timer every second
+                    document.getElementById("timer").innerText = `Time: ${timer}s`;
+                }, 1000); // Update timer every second
+            }
+
+            if (timestamp - lastTime >= speed) {
+                update();
+                draw();
+                lastTime = timestamp;
+            }
+
+            if (!gameOver) {
+                requestAnimationFrame(gameLoop);
+            } else {
+                document.getElementById("gameOverMessage").style.display = "block"; // Show game over message
+            }
+        }
+
+        function changeDirection(event) {
+            switch (event.target.id) {
+                case 'upButton':
+                    if (direction.y === 0) {
+                        direction = { x: 0, y: -20 };
+                    }
+                    break;
+                case 'downButton':
+                    if (direction.y === 0) {
+                        direction = { x: 0, y: 20 };
+                    }
+                    break;
+                case 'leftButton':
+                    if (direction.x === 0) {
+                        direction = { x: -20, y: 0 };
+                    }
+                    break;
+                case 'rightButton':
+                    if (direction.x === 0) {
+                        direction = { x: 20, y: 0 };
+                    }
+                    break;
+            }
+        }
+
+        document.getElementById('upButton').addEventListener('click', changeDirection);
+        document.getElementById('downButton').addEventListener('click', changeDirection);
+        document.getElementById('leftButton').addEventListener('click', changeDirection);
+        document.getElementById('rightButton').addEventListener('click', changeDirection);
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>

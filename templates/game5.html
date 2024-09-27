@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yen anjala machan ava </title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #282c34;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        h1 {
+            margin: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .game-container {
+            position: relative;
+            height: 70vh;
+            width: 100%;
+            border: 2px solid #61dafb;
+            background: url('https://images.unsplash.com/photo-1519328452754-d1c021c347b7') no-repeat center center / cover;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .target {
+            position: absolute;
+            width: 70px;  /* Adjust size as needed */
+            height: 70px; /* Adjust size as needed */
+            border-radius: 50%;
+            transition: transform 0.2s, top 0.5s, left 0.5s; /* Smooth transitions for movement */
+            cursor: pointer;
+        }
+        .target:hover {
+            transform: scale(1.2); /* Slight zoom effect on hover */
+        }
+        .score-board {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+        .congratulations {
+            display: none;
+            font-size: 2em;
+            margin: 20px;
+            color: #61dafb;
+        }
+    </style>
+    <script>
+        let score = 0;
+        let timeLeft = 30; // Game duration in seconds
+        let gameInterval;
+        let targetTimeout;
+
+        // Arrays for good and bad habit images
+        const goodImages = [
+            '/static/goodshit1.png',
+            '/static/goodshit2.png',
+            '/static/goodshit3.png',
+            '/static/goodshit4.jpeg',
+            '/static/goodshit5.png',
+            '/static/goodshit6.jpg',
+        ];
+
+        const badImages = [
+            '/static/badshit1.png',
+            '/static/badshit2.jpg',
+            '/static/badshit3.jpg',
+        ];
+
+        const clickSound = new Audio('/static/click.mp3'); // Add sound effect for clicks
+        const backgroundMusic = new Audio('/static/background.mp3'); // Background music
+        backgroundMusic.loop = true; // Loop background music
+
+        function startGame() {
+            score = 0;
+            document.getElementById('score').innerText = score;
+            backgroundMusic.play(); // Start background music
+            gameInterval = setInterval(showTarget, 1000); // Show a target every 1 second (faster)
+            setTimeout(endGame, timeLeft * 1000);
+        }
+
+        function showTarget() {
+            const gameContainer = document.querySelector('.game-container');
+            const target = document.createElement('img');
+            const isBadHabit = Math.random() < 0.5;
+
+            // Randomly choose between good and bad habit images
+            target.src = isBadHabit
+                ? badImages[Math.floor(Math.random() * badImages.length)]
+                : goodImages[Math.floor(Math.random() * goodImages.length)];
+
+            target.className = 'target';
+            target.style.left = Math.random() * (gameContainer.clientWidth - 70) + 'px';
+            target.style.top = Math.random() * (gameContainer.clientHeight - 70) + 'px';
+            target.style.display = 'block';
+
+            // Add a floating animation effect
+            target.style.transition = "top 0.4s ease-in-out, left 0.4s ease-in-out";
+            target.style.top = Math.random() * (gameContainer.clientHeight - 70) + 'px';
+            target.style.left = Math.random() * (gameContainer.clientWidth - 70) + 'px';
+
+            // Set a reaction timeout of 1.5 seconds (faster removal)
+            targetTimeout = setTimeout(() => {
+                if (gameContainer.contains(target)) {
+                    gameContainer.removeChild(target);
+                }
+            }, 1500);
+
+            target.onclick = function() {
+                clearTimeout(targetTimeout); 
+                clickSound.play(); // Play sound effect on click
+                if (isBadHabit) {
+                    score--; // Decrease score for bad habits
+                } else {
+                    score++; // Increase score for good habits
+                }
+                updateScore();
+                gameContainer.removeChild(target);
+            };
+
+            gameContainer.appendChild(target);
+        }
+
+        function updateScore() {
+            document.getElementById('score').innerText = score;
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            backgroundMusic.pause(); // Stop background music
+
+            if (score < 5) {
+                alert("You didn't get enough right! Restarting the game...");
+                startGame();
+            } else {
+                showCongratulations();
+            }
+        }
+
+        function showCongratulations() {
+            document.querySelector('.game-container').style.display = 'none';
+            const congratulationsMessage = document.createElement('div');
+            congratulationsMessage.className = 'congratulations';
+            congratulationsMessage.innerHTML = 'Congratulations on grabbing the good shit! 😊<br>Redirecting to the next game...';
+            document.body.appendChild(congratulationsMessage);
+            congratulationsMessage.style.display = 'block';
+
+            setTimeout(() => {
+                window.location.href = '/game6';
+            }, 3000); 
+        }
+    </script>
+</head>
+<body onload="startGame()">
+    <h1>grab the good shit </h1>
+    <div class="game-container"></div>
+    <div class="score-board">Score: <span id="score">${score}</span></div>
+</body>
+</html>
