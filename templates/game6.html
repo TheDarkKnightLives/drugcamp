@@ -3,365 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rise Up - Interactive Balloon</title>
+    <title>Spaceship Dodge Game</title>
     <style>
-        body {
+        * {
             margin: 0;
-            background-color: #282c34;
-            color: #ffffff;
-            font-family: 'Roboto', sans-serif;
-            overflow: hidden;
-            text-align: center;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .game-container {
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #game-container {
             position: relative;
-            height: 100vh;
             width: 100vw;
+            height: 100vh;
             background-color: #1e1e1e;
-            overflow: hidden;
         }
-        .balloon {
+
+        #spaceship {
             position: absolute;
-            bottom: 10%;
+            top: 80%;
             left: 50%;
-            width: 60px;
-            height: 80px;
-            background-color: red;
-            border-radius: 50%;
             transform: translateX(-50%);
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            border: 2px solid white;
+            width: 80px;
+            height: 80px;
+            background: url('static/spaceship.png') no-repeat center/contain;
+            transition: all 0.3s ease;
+        }
+
+        .falling-object, .power-up {
+            position: absolute;
+            top: 0;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        #timer, #score, #health {
+            position: absolute;
+            top: 10px;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        #timer { left: 10px; }
+        #score { left: 50%; transform: translateX(-50%); }
+        #health { right: 10px; }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
-            color: white;
-            font-weight: bold;
-        }
-        .balloon::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            width: 2px;
-            height: 20px;
-            background-color: white;
-            transform: translateX(-50%);
-        }
-        .obstacle {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-size: cover;
-        }
-        .score-board, .lives-board, .level-board {
-            position: fixed;
-            top: 10px;
-            left: 20px;
-            font-size: 1.5em;
-            color: #61dafb;
-        }
-        .lives-board {
-            left: auto;
-            right: 20px;
-        }
-        .level-board {
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .power-up {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-color: yellow;
-            border-radius: 50%;
-        }
-        .explosion {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            background-color: orange;
-            border-radius: 50%;
-            animation: explode 0.5s forwards;
-        }
-        @keyframes goodJob {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-        .good-job {
-            font-size: 2em;
-            color: lime;
-            position: absolute;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: goodJob 1s ease-in-out infinite;
-        }
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
-            font-size: 2em;
-            display: none;
+            font-size: 32px;
             z-index: 100;
+            display: none;
+            animation: fade-in-out 3s infinite;
         }
-        @keyframes explode {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(3); opacity: 0; }
+
+        /* Cool glow and loading spinner */
+        .spinner {
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-top: 8px solid #fff;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 24px;
+            animation: glow 1.5s ease-in-out infinite;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+            100% { text-shadow: 0 0 20px rgba(255, 255, 255, 1); }
+        }
+
+        @keyframes fade-in-out {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Pulsing effect for the spaceship when shield is activated */
+        .shielded {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
-    <div class="score-board">Score: <span id="score">0</span></div>
-    <div class="lives-board">Lives: <span id="lives">3</span></div>
-    <div class="level-board">Level: <span id="level">1</span></div>
-    <div class="popup" id="popupMessage"></div>
-    <div class="game-container" id="gameContainer">
-        <div class="balloon" id="balloon">You</div>
+    <div id="game-container">
+        <div id="spaceship"></div>
+        <div id="timer">Time: 50</div>
+        <div id="score">Score: 0</div>
+        <div id="health">Health: 3</div>
+        
+        <!-- Loading screen with a spinner -->
+        <div id="loading-screen">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loading-text">Loading...</div>
+        </div>
     </div>
-    <audio id="hitSound" src="/static/hit-sound.mp3"></audio>
-    <audio id="bgMusic" src="/static/background-music.mp3" loop></audio>
 
     <script>
-        const balloon = document.getElementById('balloon');
-        const gameContainer = document.getElementById('gameContainer');
-        const scoreDisplay = document.getElementById('score');
-        const livesDisplay = document.getElementById('lives');
-        const levelDisplay = document.getElementById('level');
-        const hitSound = document.getElementById('hitSound');
-        const bgMusic = document.getElementById('bgMusic');
-        const popupMessage = document.getElementById('popupMessage');
+        const spaceship = document.getElementById('spaceship');
+        const gameContainer = document.getElementById('game-container');
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingText = document.getElementById('loading-text');
+        let gameWidth = gameContainer.clientWidth;
+        let gameHeight = gameContainer.clientHeight;
+        let timeRemaining = 50; // 50 seconds
+        let interval;
+        let gameOver = false;
         let score = 0;
-        let lives = 3;
-        let level = 1;
-        let obstacles = [];
-        let powerUps = [];
-        let gameInterval;
-        let spawnInterval;
-        let powerUpInterval;
-        let gameSpeed = 3; // Initial speed of obstacles
-        let isVibrating = false; // Track vibration state
-        let totalTime = 0; // Track total game time
+        let health = 3;
+        let invincible = false;
+        let speedMultiplier = 1;
 
-        // Images for the obstacles
-        const obstacleImages = [
-            '/static/badshit1.png',
-            '/static/badshit2.jpg',
-            '/static/badshit3.jpg'
-        ];
-
-        // Start background music
-        bgMusic.play();
-
-        // Drag the balloon
-        let isDragging = false;
-        balloon.onmousedown = () => isDragging = true;
-        window.onmouseup = () => isDragging = false;
-        window.onmousemove = (e) => {
-            if (isDragging) {
-                const gameRect = gameContainer.getBoundingClientRect();
-                const newX = e.clientX - gameRect.left - balloon.offsetWidth / 2;
-                const newY = e.clientY - gameRect.top - balloon.offsetHeight / 2;
-                balloon.style.left = Math.max(0, Math.min(gameContainer.clientWidth - balloon.offsetWidth, newX)) + 'px';
-                balloon.style.top = Math.max(0, Math.min(gameContainer.clientHeight - balloon.offsetHeight, newY)) + 'px';
-            }
-        };
-
-        // Generate falling obstacles with a higher spawn rate
-        function createObstacle() {
-            const obstacle = document.createElement('div');
-            obstacle.classList.add('obstacle');
-
-            const randomImage = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
-            obstacle.style.backgroundImage = `url('${randomImage}')`;
-
-            obstacle.style.left = Math.random() * (gameContainer.clientWidth - 50) + 'px';
-            obstacle.style.top = '0px';
-
-            gameContainer.appendChild(obstacle);
-            obstacles.push(obstacle);
-        }
-
-        // Vibrate the balloon when hit
-        function vibrateBalloon() {
-            if (!isVibrating) {
-                isVibrating = true;
-                balloon.style.animation = 'vibrate 0.3s ease-in-out';
-                setTimeout(() => {
-                    balloon.style.animation = '';
-                    isVibrating = false;
-                }, 300);
-            }
-        }
-
-        // Create explosion effect and hide balloon after explosion
-        function explodeBalloon() {
-            const explosion = document.createElement('div');
-            explosion.classList.add('explosion');
-            explosion.style.left = balloon.style.left;
-            explosion.style.top = balloon.style.top;
-            gameContainer.appendChild(explosion);
-            balloon.style.display = 'none'; // Hide balloon after explosion
-            setTimeout(() => {
-                explosion.remove();
-                showPopup("Thothuteenga Pangu!"); // Show popup message
-                setTimeout(() => {
-                    window.location.reload(); // Restart the game after message
-                }, 2000); // Wait for 2 seconds before reload
-            }, 500);
-        }
-
-        // Move obstacles down and check for collisions
-        function updateObstacles() {
-            obstacles.forEach((obstacle, index) => {
-                let obstacleTop = parseInt(obstacle.style.top);
-                obstacle.style.top = obstacleTop + gameSpeed + 'px';
-
-                if (obstacleTop > gameContainer.clientHeight) {
-                    obstacle.remove();
-                    obstacles.splice(index, 1);
-                    score++;
-                    scoreDisplay.innerText = score;
-                    checkLevelProgression();
+        // Timer countdown
+        function startTimer() {
+            interval = setInterval(() => {
+                timeRemaining--;
+                document.getElementById('timer').innerText = `Time: ${timeRemaining}`;
+                if (timeRemaining <= 0) {
+                    clearInterval(interval);
+                    showLoadingScreen('Calculating your score...', 5000, () => {
+                        window.location.href = "/game10"; // Redirect after win
+                    });
                 }
+            }, 1000);
+        }
 
-                const balloonRect = balloon.getBoundingClientRect();
-                const obstacleRect = obstacle.getBoundingClientRect();
-                if (
-                    obstacleRect.left < balloonRect.right &&
-                    obstacleRect.right > balloonRect.left &&
-                    obstacleRect.top < balloonRect.bottom &&
-                    obstacleRect.bottom > balloonRect.top
-                ) {
-                    lives--;
-                    livesDisplay.innerText = lives;
-                    vibrateBalloon(); // Vibrate balloon on hit
-                    hitSound.play();
-                    obstacle.remove();
-                    obstacles.splice(index, 1);
+        // Moving the spaceship (touch or key controls)
+        function moveSpaceship(e) {
+            const touchX = e.touches ? e.touches[0].clientX : e.clientX;
+            let newLeft = touchX - spaceship.offsetWidth / 2;
 
-                    if (lives === 0) {
-                        explodeBalloon(); // Explosion effect on last life
+            if (newLeft < 0) newLeft = 0;
+            if (newLeft > gameWidth - spaceship.offsetWidth) newLeft = gameWidth - spaceship.offsetWidth;
+            
+            spaceship.style.left = `${newLeft}px`;
+        }
+
+        // Collision Detection
+        function detectCollision(fallingObj) {
+            if (invincible) return false;
+
+            const spaceshipRect = spaceship.getBoundingClientRect();
+            const objRect = fallingObj.getBoundingClientRect();
+
+            return !(
+                spaceshipRect.bottom < objRect.top ||
+                spaceshipRect.top > objRect.bottom ||
+                spaceshipRect.right < objRect.left ||
+                spaceshipRect.left > objRect.right
+            );
+        }
+
+        // Power-up collision detection
+        function collectPowerUp(powerUp) {
+            const spaceshipRect = spaceship.getBoundingClientRect();
+            const powerUpRect = powerUp.getBoundingClientRect();
+
+            return !(
+                spaceshipRect.bottom < powerUpRect.top ||
+                spaceshipRect.top > powerUpRect.bottom ||
+                spaceshipRect.right < powerUpRect.left ||
+                spaceshipRect.left > powerUpRect.right
+            );
+        }
+
+        // Create falling objects
+        function createFallingObject() {
+            const obj = document.createElement('div');
+            obj.classList.add('falling-object');
+
+            // Randomly choose between badshit1.png, badshit2.jpg, and badshit3.jpg
+            const badImages = ['badshit1.png', 'badshit2.jpg', 'badshit3.jpg'];
+            const randomImage = badImages[Math.floor(Math.random() * badImages.length)];
+            obj.style.backgroundImage = `url('static/${randomImage}')`;
+
+            obj.style.left = `${Math.random() * (gameWidth - 50)}px`; // Random X position
+            gameContainer.appendChild(obj);
+
+            let fallInterval = setInterval(() => {
+                let currentTop = parseInt(obj.style.top) || 0;
+                obj.style.top = `${currentTop + 5 * speedMultiplier}px`;
+
+                if (detectCollision(obj)) {
+                    clearInterval(fallInterval);
+                    obj.remove();
+                    health -= 1;
+                    document.getElementById('health').innerText = `Health: ${health}`;
+                    if (health <= 0) {
+                        clearInterval(interval);
+                        showLoadingScreen('Restarting...', 3000, () => {
+                            location.reload(); // Reload the game after losing
+                        });
                     }
+                } else if (currentTop > gameHeight) {
+                    clearInterval(fallInterval);
+                    obj.remove(); // Remove object when it goes off screen
+                    score++;
+                    document.getElementById('score').innerText = `Score: ${score}`;
                 }
-            });
+            }, 20);
         }
 
-        // Move power-ups down and check for collection
-        function updatePowerUps() {
-            powerUps.forEach((powerUp, index) => {
-                let powerUpTop = parseInt(powerUp.style.top);
-                powerUp.style.top = powerUpTop + gameSpeed + 'px';
-
-                if (powerUpTop > gameContainer.clientHeight) {
-                    powerUp.remove();
-                    powerUps.splice(index, 1);
-                }
-
-                const balloonRect = balloon.getBoundingClientRect();
-                const powerUpRect = powerUp.getBoundingClientRect();
-                if (
-                    powerUpRect.left < balloonRect.right &&
-                    powerUpRect.right > balloonRect.left &&
-                    powerUpRect.top < balloonRect.bottom &&
-                    powerUpRect.bottom > balloonRect.top
-                ) {
-                    lives++;
-                    livesDisplay.innerText = lives;
-                    powerUp.remove();
-                    powerUps.splice(index, 1);
-                }
-            });
-        }
-
-        // Check level progression based on score
-        function checkLevelProgression() {
-            if (score > level * 10) {
-                level++;
-                levelDisplay.innerText = level;
-                gameSpeed += 1; // Increase speed with each level
-                showGoodJobMessage();
-            }
-        }
-
-        // Show feedback message when reaching a new level
-        function showGoodJobMessage() {
-            const message = document.createElement('div');
-            message.classList.add('good-job');
-            message.innerText = "vedapuuuuuuu....";
-            gameContainer.appendChild(message);
-            setTimeout(() => message.remove(), 1500);
-        }
-
-        // Increase speed every 10 seconds
-        function speedUpObstacles() {
-            gameSpeed += 1; // Increase speed of obstacles
-        }
-
-        // Create power-ups
+        // Create power-ups (shield)
         function createPowerUp() {
             const powerUp = document.createElement('div');
             powerUp.classList.add('power-up');
-            powerUp.style.left = Math.random() * (gameContainer.clientWidth - 40) + 'px';
-            powerUp.style.top = '0px';
+            powerUp.style.backgroundImage = "url('static/shield.png')";
+            powerUp.style.left = `${Math.random() * (gameWidth - 50)}px`; // Random X position
             gameContainer.appendChild(powerUp);
-            powerUps.push(powerUp);
-        }
 
-        // Start the game
-        function startGame() {
-            gameInterval = setInterval(() => {
-                updateObstacles();
-                updatePowerUps();
-                totalTime += 0.016; // Increment total time
-                if (totalTime >= 40) {
-                    endGame(); // End game after 40 seconds
+            let fallInterval = setInterval(() => {
+                let currentTop = parseInt(powerUp.style.top) || 0;
+                powerUp.style.top = `${currentTop + 3}px`;
+
+                if (collectPowerUp(powerUp)) {
+                    clearInterval(fallInterval);
+                    powerUp.remove();
+                    activateShield();
+                } else if (currentTop > gameHeight) {
+                    clearInterval(fallInterval);
+                    powerUp.remove();
                 }
-            }, 16);
-
-            spawnInterval = setInterval(createObstacle, 1000); // Increase spawn rate for more difficulty
-            powerUpInterval = setInterval(createPowerUp, 10000);
-            setInterval(speedUpObstacles, 10000); // Speed up every 10 seconds
+            }, 20);
         }
 
-        // Show popup message
-        function showPopup(message) {
-            popupMessage.innerText = message;
-            popupMessage.style.display = 'block';
+        // Activate shield (invincibility)
+        function activateShield() {
+            invincible = true;
+            spaceship.classList.add('shielded');
             setTimeout(() => {
-                popupMessage.style.display = 'none';
-                if (message === "Noiceeeee!") {
-                    window.location.href = '/game7'; // Redirect on win
-                }
-            }, 2000); // Wait for 2 seconds before hiding and redirecting
+                invincible = false;
+                spaceship.classList.remove('shielded');
+            }, 5000); // Shield lasts for 5 seconds
         }
 
-        // End the game
-        function endGame() {
-            clearInterval(gameInterval);
-            clearInterval(spawnInterval);
-            clearInterval(powerUpInterval);
-            showPopup("Thothuteenga Pangu!"); // Show popup message on loss
+        // Show loading screen with optional message and timeout
+        function showLoadingScreen(message, timeout, callback) {
+            loadingText.innerText = message;
+            loadingScreen.style.display = 'flex';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                if (callback) callback();
+            }, timeout);
         }
 
-        // Start the game on load
+        // Initialize game
+        function startGame() {
+            showLoadingScreen('Loading...', 2000, () => {
+                loadingScreen.style.display = 'none';
+                startTimer();
+                setInterval(createFallingObject, 1000); // Create falling objects every second
+                setInterval(createPowerUp, 7000); // Create power-ups every 7 seconds
+            });
+        }
+
+        // Event listeners for touch and key controls
+        window.addEventListener('mousemove', moveSpaceship);
+        window.addEventListener('touchmove', moveSpaceship);
         startGame();
-
-        // Listen for winning condition (if time is over 40 seconds)
-        setInterval(() => {
-            if (totalTime >= 40 && lives > 0) {
-                clearInterval(gameInterval);
-                clearInterval(spawnInterval);
-                clearInterval(powerUpInterval);
-                showPopup("next level polam "); // Show popup message on win
-            }
-        }, 1000); // Check every second
     </script>
 </body>
 </html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .leaderboard {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .entry {
+            margin: 15px 0;
+            font-size: 24px;
+        }
+        .entry span {
+            font-weight: bold;
+            color: #00ff00; /* Highlight the roll number */
+        }
+        .bottom-message {
+            margin-top: 30px;
+            font-size: 20px;
+            color: #ff0000; /* Red color for better luck message */
+        }
+    </style>
+</head>
+<body>
+    <h1>Leaderboard</h1>
+    <div class="leaderboard">
+        <div class="entry"><span>1.</span> 23mss012 Aswath</div>
+        <div class="entry"><span>2.</span> 23it005 Esaka</div>
+        <div class="entry"><span>3.</span> 21bsc008 Cynthia</div>
+        <div class="entry"><span>4.</span> 23da12 Kanimozhi</div>
+    </div>
+    <div class="bottom-message">Better luck next time!</div>
+</body>
+</html>

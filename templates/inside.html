@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Number & Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        #random-number {
+            font-size: 64px; /* Larger font size for the score */
+            font-weight: bold;
+            color: #00ff00; /* Arcade green color */
+            animation: fadeIn 2s ease-in-out, arcadeAnimation 1s infinite; /* Combined animations */
+        }
+        h2 {
+            font-weight: bold;
+            color: #ffffff;
+            margin: 20px 0;
+        }
+        input[type="text"],
+        input[type="email"] {
+            width: 80%; /* Adjusted width for mobile */
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            font-size: 18px; /* Slightly larger font size for the button */
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes arcadeAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <h2>Your Score</h2>
+    <div id="random-number"></div>
+    <h2>Give me your info to receive the certificate <br>and<br> to view the leaderboard</h2>
+    <form action="/inside" method="POST">
+        <input type="text" name="roll_number" placeholder="Roll Number" required>
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        // Generate and display a random number between 2700 and 3050 with arcade animation
+        function displayRandomNumber() {
+            const randomNumber = Math.floor(Math.random() * (3050 - 2700 + 1)) + 2700;
+            document.getElementById('random-number').innerText = randomNumber;
+        }
+
+        // Call the function to display the random number when the page loads
+        displayRandomNumber();
+    </script>
+</body>
+</html>

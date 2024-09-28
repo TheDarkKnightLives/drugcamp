@@ -1,335 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drug Awareness Quiz</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-      margin: 20px 0;
-    }
-
-    .quiz-container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      position: relative;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden; /* Ensures sliding effect is contained */
-    }
-
-    .timer {
-      text-align: right;
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #555;
-    }
-
-    .question {
-      position: absolute; /* Position questions absolutely */
-      width: 100%; /* Full width for sliding effect */
-      transform: translateX(100%); /* Start off screen */
-      opacity: 0; /* Start invisible */
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-
-    .question.active {
-      transform: translateX(0); /* Slide into view */
-      opacity: 1; /* Fade in */
-    }
-
-    .question.out {
-      transform: translateX(-100%); /* Slide out to the left */
-      opacity: 0; /* Fade out */
-    }
-
-    .options label {
-      display: block;
-      padding: 10px;
-      background: #e0e0e0;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .options input {
-      margin-right: 10px;
-    }
-
-    .options label:hover {
-      background: #d0d0d0;
-    }
-
-    button {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      background: #28a745;
-      color: white;
-      font-size: 18px;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 20px;
-    }
-
-    button:hover {
-      background: #de1f1f;
-    }
-
-    .results {
-      display: none;
-      text-align: center;
-      font-size: 24px;
-      margin-top: 20px;
-    }
-
-    /* Fix the button at the bottom */
-    .fixed-bottom {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #08ef6c; /* Hot pink color */
-  color: white;
-  border: none;
-  border-radius: 5px; /* Rounded corners */
-  padding: 15px 30px; /* Padding for better touch area */
-  font-size: 18px; /* Larger text */
-  font-weight: bold; /* Bold text */
-  box-shadow: 0 4px 20px rgba(255, 105, 180, 0.5); /* Subtle shadow for depth */
-  cursor: pointer; /* Pointer cursor on hover */
-  transition: opacity 0.3s; /* Smooth transition for visibility */
-}
-
-.hidden {
-  opacity: 0; /* Hidden by default */
-  pointer-events: none; /* Prevent clicks when hidden */
-}
-
-.visible {
-  opacity: 1; /* Fully visible */
-  pointer-events: auto; /* Allow clicks */
-}
-
-
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .question {
+            display: none;
+        }
+        .question.active {
+            display: block;
+        }
+        #next-btn, #submit-btn {
+            margin-top: 20px; /* Add margin to separate from questions */
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        #next-btn:hover, #submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            display: none;
+            margin-top: 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #time {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
+    <div class="quiz-container">
+        <h1>Quiz App</h1>
+        <div id="time">Time: 05:00</div>
+        <form id="quiz-form">
+            <div class="question active">
+                <p>1. What do you think about the color blue?</p>
+                <div>
+                    <label><input type="radio" name="q1" value="a"> It's the best color ever!</label>
+                    <label><input type="radio" name="q1" value="b"> I love it!</label>
+                    <label><input type="radio" name="q1" value="c"> It's okay.</label>
+                    <label><input type="radio" name="q1" value="d"> I don't like it.</label>
+                </div>
+            </div>
+            <div class="question">
+                <p>2. How do you feel about Mondays?</p>
+                <div>
+                    <label><input type="radio" name="q2" value="a"> They are the worst!</label>
+                    <label><input type="radio" name="q2" value="b"> I love starting fresh!</label>
+                    <label><input type="radio" name="q2" value="c"> They're just another day.</label>
+                    <label><input type="radio" name="q2" value="d"> I don't care.</label>
+                </div>
+            </div>
+            <div class="question">
+                <p>3. What's your favorite ice cream flavor?</p>
+                <div>
+                    <label><input type="radio" name="q3" value="a"> Chocolate!</label>
+                    <label><input type="radio" name="q3" value="b"> Vanilla!</label>
+                    <label><input type="radio" name="q3" value="c"> Strawberry!</label>
+                    <label><input type="radio" name="q3" value="d"> Mint!</label>
+                </div>
+            </div>
+            <div class="question">
+                <p>4. How do you prefer your coffee?</p>
+                <div>
+                    <label><input type="radio" name="q4" value="a"> Black!</label>
+                    <label><input type="radio" name="q4" value="b"> With milk!</label>
+                    <label><input type="radio" name="q4" value="c"> With sugar!</label>
+                    <label><input type="radio" name="q4" value="d"> I don't drink coffee.</label>
+                </div>
+            </div>
+            <div class="question">
+                <p>5. What's your go-to snack?</p>
+                <div>
+                    <label><input type="radio" name="q5" value="a"> Chips!</label>
+                    <label><input type="radio" name="q5" value="b"> Chocolate!</label>
+                    <label><input type="radio" name="q5" value="c"> Fruits!</label>
+                    <label><input type="radio" name="q5" value="d"> I don't snack.</label>
+                </div>
+            </div>
+            <div class="question">
+                <p>6. Do you enjoy reading books?</p>
+                <div>
+                    <label><input type="radio" name="q6" value="a"> Yes, I love them!</label>
+                    <label><input type="radio" name="q6" value="b"> They're okay.</label>
+                    <label><input type="radio" name="q6" value="c"> I prefer movies.</label>
+                    <label><input type="radio" name="q6" value="d"> No, not really.</label>
+                </div>
+            </div>
+            <div class="question">
+                <p>7. What do you think of cats?</p>
+                <div>
+                    <label><input type="radio" name="q7" value="a"> They're cute!</label>
+                    <label><input type="radio" name="q7" value="b"> They can be annoying.</label>
+                    <label><input type="radio" name="q7" value="c"> They make your favorite music sound awful!</label>
+                    <label><input type="radio" name="q7" value="d"> They are just sad and lonely!</label>
+                </div>
+            </div>
 
-  <div class="quiz-container">
-    <h1>Drug Awareness Quiz</h1>
+            <button type="button" id="next-btn">Next Question</button>
+            <button type="button" id="submit-btn" class="hidden">Submit Quiz</button>
+        </form>
 
-    <div class="timer">
-      <span id="time">Time: 00:00</span>
+        <div class="results" id="results"></div>
     </div>
 
-    <form id="quiz-form">
-      <!-- Question 1 -->
-      <div class="question active" id="question1">
-        <h3>1. What’s the best way to say “no” to drugs?</h3>
-        <div class="options">
-          <label><input type="radio" name="q1" value="a"> I'm too high on life!</label>
-          <label><input type="radio" name="q1" value="b"> No, thanks. I like my brain cells.</label>
-          <label><input type="radio" name="q1" value="c"> I’ll pass, my goldfish needs me.</label>
-          <label><input type="radio" name="q1" value="d"> Only if it comes with pizza.</label>
-        </div>
-      </div>
+    <script>
+        const quizForm = document.getElementById('quiz-form');
+        const questions = document.querySelectorAll('.question');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultsDiv = document.getElementById('results');
+        const timerDisplay = document.getElementById('time');
 
-      <!-- Question 2 -->
-      <div class="question" id="question2">
-        <h3>2. What is the primary effect of alcohol on the brain?</h3>
-        <div class="options">
-          <label><input type="radio" name="q2" value="a"> It makes you dance better.</label>
-          <label><input type="radio" name="q2" value="b"> It enhances your karaoke skills.</label>
-          <label><input type="radio" name="q2" value="c"> Slows down your reaction time and judgment.</label>
-          <label><input type="radio" name="q2" value="d"> Turns you into a stand-up comedian.</label>
-        </div>
-      </div>
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeRemaining = 300; // 5 minutes in seconds
 
-      <!-- Question 3 -->
-      <div class="question" id="question3">
-        <h3>3. Why do people say “Just Say No” to drugs?</h3>
-        <div class="options">
-          <label><input type="radio" name="q3" value="a"> Because it's way too hard to say “yes”.</label>
-          <label><input type="radio" name="q3" value="b"> Because saying “no” makes you look cool.</label>
-          <label><input type="radio" name="q3" value="c"> Because they want to keep their brains intact!</label>
-          <label><input type="radio" name="q3" value="d"> Because it’s a secret club and they can’t tell you.</label>
-        </div>
-      </div>
+        // Start the timer
+        function startTimer() {
+            timer = setInterval(() => {
+                timeRemaining--;
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerDisplay.textContent = `Time: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-      <!-- Question 4 -->
-      <div class="question" id="question4">
-        <h3>4. If drugs were a food, what would they be?</h3>
-        <div class="options">
-          <label><input type="radio" name="q4" value="a"> Expired milk.</label>
-          <label><input type="radio" name="q4" value="b"> Junk food - bad for you!</label>
-          <label><input type="radio" name="q4" value="c"> A healthy salad - just kidding!</label>
-          <label><input type="radio" name="q4" value="d"> Candy - because they look sweet.</label>
-        </div>
-      </div>
-
-      <!-- Question 5 -->
-      <div class="question" id="question5">
-        <h3>5. What do you call someone who helps you stay drug-free?</h3>
-        <div class="options">
-          <label><input type="radio" name="q5" value="a"> A superhero!</label>
-          <label><input type="radio" name="q5" value="b"> Your personal trainer.</label>
-          <label><input type="radio" name="q5" value="c"> A really good friend.</label>
-          <label><input type="radio" name="q5" value="d"> Your mom - always watching!</label>
-        </div>
-      </div>
-
-      <!-- Add more questions as necessary -->
-      <div class="question" id="question6">
-        <h3>6. If someone offers you drugs, what should you say?</h3>
-        <div class="options">
-          <label><input type="radio" name="q6" value="a"> "Do I look like I need a bad trip?"</label>
-          <label><input type="radio" name="q6" value="b"> "Only if you promise to join me on a trip to Mars!"</label>
-          <label><input type="radio" name="q6" value="c"> "No thanks, I prefer unicorns!"</label>
-          <label><input type="radio" name="q6" value="d"> "Not today, I’m busy counting my toes."</label>
-        </div>
-      </div>
-
-      <div class="question" id="question7">
-        <h3>7. What's a fun fact about drugs?</h3>
-        <div class="options">
-          <label><input type="radio" name="q7" value="a"> They don't like your dance moves!</label>
-          <label><input type="radio" name="q7" value="b"> They can turn your brain into mush.</label>
-          <label><input type="radio" name="q7" value="c"> They can ruin a perfectly good pizza.</label>
-          <label><input type="radio" name="q7" value="d"> They can't make you fly, no matter what!</label>
-        </div>
-      </div>
-
-      <div class="question" id="question8">
-        <h3>8. What’s a good reason to avoid drugs?</h3>
-        <div class="options">
-          <label><input type="radio" name="q8" value="a"> You can't binge-watch your favorite show!</label>
-          <label><input type="radio" name="q8" value="b"> You might miss out on dessert.</label>
-          <label><input type="radio" name="q8" value="c"> You’ll never know how awesome life can be!</label>
-          <label><input type="radio" name="q8" value="d"> Because your pet goldfish needs you!</label>
-        </div>
-      </div>
-
-      <div class="question" id="question9">
-        <h3>9. How can you have fun without drugs?</h3>
-        <div class="options">
-          <label><input type="radio" name="q9" value="a"> By dancing like nobody's watching!</label>
-          <label><input type="radio" name="q9" value="b"> By eating a whole pizza alone!</label>
-          <label><input type="radio" name="q9" value="c"> By having a karaoke party!</label>
-          <label><input type="radio" name="q9" value="d"> By joining a llama racing team!</label>
-        </div>
-      </div>
-
-      <div class="question" id="question10">
-        <h3>10. What’s the best way to celebrate being drug-free?</h3>
-        <div class="options">
-          <label><input type="radio" name="q10" value="a"> Throw a pizza party!</label>
-          <label><input type="radio" name="q10" value="b"> Go skydiving!</label>
-          <label><input type="radio" name="q10" value="c"> Start a dance-off!</label>
-          <label><input type="radio" name="q10" value="d"> Buy a pet rock!</label>
-        </div>
-      </div>
-
-      <button type="button" id="next-btn" class="fixed-bottom">Next</button>
-    </form>
-
-    <div class="results">
-      <h2>Your Score: <span id="score"></span></h2>
-      <button type="button" id="next-btn" class="fixed-bottom hidden" onclick="goToNextGame()">
-        Next Game
-    </button>
-    </div>
-  </div>
-
-  <script>
-    let currentQuestion = 0;
-    let score = 0;
-    const totalQuestions = 10; // Change this if you add more questions
-    let timerInterval;
-    let timeLeft = 300; // 5 minutes timer (300 seconds)
-  
-    const questions = document.querySelectorAll('.question');
-    const nextButton = document.getElementById('next-btn');
-    const scoreDisplay = document.getElementById('score');
-    const timerDisplay = document.getElementById('time');
-  
-    // Initialize the quiz
-    function startQuiz() {
-      showQuestion(currentQuestion);
-      startTimer();
-    }
-  
-    function showQuestion(index) {
-      questions.forEach((question, i) => {
-        question.classList.remove('active');
-        question.classList.remove('out');
-        if (i === index) {
-          question.classList.add('active');
+                if (timeRemaining <= 0) {
+                    clearInterval(timer);
+                    showResults();
+                }
+            }, 1000);
         }
-      });
-    }
-  
-    function nextQuestion() {
-      const selectedOption = document.querySelector(`input[name="q${currentQuestion + 1}"]:checked`);
-      if (selectedOption) {
-        if (selectedOption.value === 'b') { // Assume 'b' is the correct answer for all questions
-          score++;
-        }
-        currentQuestion++;
-        if (currentQuestion < totalQuestions) {
-          showQuestion(currentQuestion);
-        } else {
-          endQuiz();
-        }
-      } else {
-        alert('Please select an answer.');
-      }
-    }
-  
-    function endQuiz() {
-      clearInterval(timerInterval);
-      document.querySelector('.quiz-container').style.display = 'none';
-      document.querySelector('.results').style.display = 'block';
-      scoreDisplay.textContent = `${score} / ${totalQuestions}`;
-    }
-  
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          endQuiz();
-        } else {
-          timeLeft--;
-          const minutes = Math.floor(timeLeft / 60);
-          const seconds = timeLeft % 60;
-          timerDisplay.textContent = `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        }
-      }, 1000);
-    }
-  
-    nextButton.addEventListener('click', nextQuestion);
-    startQuiz();
-  </script>
-  
 
+        // Show the current question
+        function showQuestion(index) {
+            questions.forEach((question, idx) => {
+                question.classList.remove('active', 'out');
+                if (idx === index) {
+                    question.classList.add('active');
+                } else if (idx === index - 1) {
+                    question.classList.add('out');
+                }
+            });
+
+            // Hide/show next/submit button
+            if (index === questions.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        // Check answers
+        function checkAnswers() {
+            const answers = [ 
+                'b', // Question 1 answer
+                'c', // Question 2 answer
+                'c', // Question 3 answer
+                'b', // Question 4 answer
+                'c', // Question 5 answer
+                'a', // Question 6 answer
+                'd'  // Question 7 answer
+            ];
+
+            answers.forEach((answer, index) => {
+                const selectedAnswer = quizForm[`q${index + 1}`].value;
+                if (selectedAnswer === answer) {
+                    score++;
+                }
+            });
+        }
+
+        // Show results
+        function showResults() {
+            clearInterval(timer);
+            quizForm.style.display = 'none';
+            resultsDiv.style.display = 'block';
+            resultsDiv.textContent = `You scored ${score} out of ${questions.length}! redirecting you ...` ;
+
+            setTimeout(() => {
+              window.location.href = '/inside';
+
+            }, 5000);
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+        });
+
+        submitBtn.addEventListener('click', () => {
+            checkAnswers();
+            showResults();
+        });
+
+        // Initialize the quiz
+        startTimer();
+        showQuestion(currentQuestionIndex);
+    </script>
 </body>
 </html>
