@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>yen anjala machan ava </title>
+    <title>Grab the Good Shit</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -27,6 +27,7 @@
             background: url('https://images.unsplash.com/photo-1519328452754-d1c021c347b7') no-repeat center center / cover;
             margin: 20px auto;
             overflow: hidden;
+            display: none; /* Hide initially */
         }
         .target {
             position: absolute;
@@ -48,6 +49,19 @@
             font-size: 2em;
             margin: 20px;
             color: #61dafb;
+        }
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
         }
     </style>
     <script>
@@ -76,10 +90,27 @@
         const backgroundMusic = new Audio('/static/background.mp3'); // Background music
         backgroundMusic.loop = true; // Loop background music
 
-        function startGame() {
+        function preloadImages(imageArray) {
+            const promises = imageArray.map(src => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = src;
+                    img.onload = resolve;
+                    img.onerror = resolve; // Resolve even if there's an error (to prevent getting stuck)
+                });
+            });
+            return Promise.all(promises);
+        }
+
+        async function startGame() {
+            // Preload images
+            await preloadImages([...goodImages, ...badImages]);
+            document.querySelector('.loading-screen').style.display = 'none'; // Hide loading screen
+
             score = 0;
             document.getElementById('score').innerText = score;
             backgroundMusic.play(); // Start background music
+            document.querySelector('.game-container').style.display = 'block'; // Show game container
             gameInterval = setInterval(showTarget, 1000); // Show a target every 1 second (faster)
             setTimeout(endGame, timeLeft * 1000);
         }
@@ -98,11 +129,6 @@
             target.style.left = Math.random() * (gameContainer.clientWidth - 70) + 'px';
             target.style.top = Math.random() * (gameContainer.clientHeight - 70) + 'px';
             target.style.display = 'block';
-
-            // Add a floating animation effect
-            target.style.transition = "top 0.4s ease-in-out, left 0.4s ease-in-out";
-            target.style.top = Math.random() * (gameContainer.clientHeight - 70) + 'px';
-            target.style.left = Math.random() * (gameContainer.clientWidth - 70) + 'px';
 
             // Set a reaction timeout of 1.5 seconds (faster removal)
             targetTimeout = setTimeout(() => {
@@ -156,9 +182,15 @@
         }
     </script>
 </head>
-<body onload="startGame()">
-    <h1>grab the good shit </h1>
+<body>
+    <div class="loading-screen">Loading...</div>
+    <h1>Grab the Good Shit</h1>
     <div class="game-container"></div>
     <div class="score-board">Score: <span id="score">${score}</span></div>
+
+    <script>
+        // Start the game once everything is ready
+        startGame();
+    </script>
 </body>
 </html>

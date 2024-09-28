@@ -236,39 +236,37 @@
                 snake.unshift(head);
                 antidote = spawnAntidote();
                 score += 1; // Increase score when collecting an antidote
-                document.getElementById("score").innerText = `Score: ${score}`; // Update score display
-
-                // Check if the goal is reached
+                document.getElementById('score').innerText = `Score: ${score}`;
                 if (score >= requiredAntidotes) {
-                    displayWinningMessage(); // Display winning message
-                    return;
+                    winGame(); // Call win game function if the goal is reached
                 }
             } else {
                 snake.unshift(head);
-                snake.pop(); // Remove last segment
+                snake.pop(); // Remove the last segment of the snake
             }
-        }
-
-        function displayWinningMessage() {
-            const winningMessage = document.getElementById('winningMessage');
-            winningMessage.style.display = 'block'; // Show the winning message
-            winningMessage.style.opacity = 1; // Set opacity to 1 for fade-in
-            setTimeout(() => {
-                winningMessage.style.opacity = 0; // Fade-out effect
-                setTimeout(() => {
-                    window.location.href = '/game5'; // Redirect to the next game
-                }, 1000); // Wait for fade-out before redirecting
-            }, 2000); // Display message for 2 seconds
         }
 
         function displayPopupMessage() {
             const popupMessage = document.getElementById('popupMessage');
-            const randomMessage = rudeMessages[Math.floor(Math.random() * rudeMessages.length)];
-            popupMessage.innerText = randomMessage;
-            popupMessage.style.display = 'block'; // Show popup message
+            popupMessage.innerText = rudeMessages[Math.floor(Math.random() * rudeMessages.length)];
+            popupMessage.style.display = 'block';
             setTimeout(() => {
-                popupMessage.style.display = 'none'; // Hide popup message after 2 seconds
-            }, 2000);
+                popupMessage.style.display = 'none';
+                gameOver = true; // Set game over flag
+                document.getElementById('gameOverMessage').style.display = 'block'; // Show game over message
+            }, 2000); // Display message for 2 seconds
+        }
+
+        function winGame() {
+            gameOver = true; // Set game over flag
+            clearInterval(timerInterval); // Stop the timer
+            const winningMessage = document.getElementById('winningMessage');
+            winningMessage.style.display = 'block';
+            winningMessage.style.opacity = '1'; // Fade-in effect for winning message
+            setTimeout(() => {
+                alert("You've won! Redirecting to the next game...");
+                window.location.href = 'next_game_url'; // Replace with the URL of the next game
+            }, 3000); // Redirect after 3 seconds
         }
 
         function draw() {
@@ -280,27 +278,25 @@
 
         function gameLoop(timestamp) {
             if (!gameStarted) {
-                lastTime = timestamp;
-                gameStarted = true; // Set the flag to true when the game starts
                 timerInterval = setInterval(() => {
-                    timer += 1; // Increment the timer every second
-                    document.getElementById("timer").innerText = `Time: ${timer}s`;
-                }, 1000); // Update timer every second
+                    timer++;
+                    document.getElementById('timer').innerText = `Time: ${timer}s`; // Update timer display
+                }, 1000); // Increment timer every second
+                gameStarted = true; // Mark game as started
             }
 
-            if (timestamp - lastTime >= speed) {
-                update();
-                draw();
-                lastTime = timestamp;
-            }
-
-            if (!gameOver) {
+            if (lastTime && timestamp - lastTime < speed) {
                 requestAnimationFrame(gameLoop);
-            } else {
-                document.getElementById("gameOverMessage").style.display = "block"; // Show game over message
+                return;
             }
+            lastTime = timestamp;
+
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
         }
 
+        // Direction change event handler
         function changeDirection(event) {
             switch (event.target.id) {
                 case 'upButton':
@@ -326,11 +322,13 @@
             }
         }
 
+        // Attach button click events
         document.getElementById('upButton').addEventListener('click', changeDirection);
         document.getElementById('downButton').addEventListener('click', changeDirection);
         document.getElementById('leftButton').addEventListener('click', changeDirection);
         document.getElementById('rightButton').addEventListener('click', changeDirection);
 
+        // Start the game loop
         requestAnimationFrame(gameLoop);
     </script>
 </body>

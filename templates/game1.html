@@ -7,31 +7,36 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0; /* Light text */
             text-align: center;
+            padding: 20px; /* Added padding */
+            margin: 0; /* Reset margin */
         }
 
         h1 {
-            color: #333;
+            color: #ffffff; /* Bright white text */
+            margin-bottom: 20px; /* Spacing below title */
         }
 
         #timer {
             font-size: 24px;
             margin-bottom: 10px;
-            color: #333;
+            color: #ffffff; /* Bright white text */
         }
 
         .memory-game {
             display: grid;
-            grid-template-columns: repeat(3, 150px);
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Responsive layout */
             grid-gap: 10px;
             justify-content: center;
             margin: 20px auto;
+            max-width: 500px; /* Max width for the game */
         }
 
         .memory-card {
-            width: 150px;
-            height: 100px;
+            width: 100px; /* Fixed width for cards */
+            height: 100px; /* Fixed height for cards */
             position: relative;
             cursor: pointer;
             perspective: 1000px;
@@ -50,7 +55,7 @@
         }
 
         .memory-card.matched .inner-card {
-            background-color: #28a745; /* Green background */
+            background-color: #28a745; /* Green background for matched cards */
             color: white; /* Text turns white on green cards */
         }
 
@@ -66,18 +71,18 @@
         }
 
         .memory-card .front {
-            background-color: #333;
-            color: #fff;
+            background-color: #333; /* Dark gray */
+            color: #fff; /* White text */
             font-size: 24px;
         }
 
         .memory-card .back {
-            background-color: #fff;
-            color: #333;
+            background-color: #1e1e1e; /* Darker background for back */
+            color: #e0e0e0; /* Light text */
             transform: rotateY(180deg);
             font-size: 14px;
             padding: 10px;
-            border: 2px solid #333;
+            border: 2px solid #333; /* Border color */
         }
 
         .tick-back {
@@ -112,10 +117,6 @@
         /* Next Game Button */
         #next-game-btn {
             display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             background-color: #007bff;
             color: white;
             padding: 15px 30px;
@@ -125,6 +126,7 @@
             cursor: pointer;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
             transition: all 0.5s ease;
+            margin-top: 20px; /* Spacing above button */
         }
 
         #next-game-btn.show {
@@ -141,7 +143,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
             display: none;
         }
 
@@ -195,7 +197,7 @@
     let lockBoard = false;
     let matchesFound = 0;
 
-    cardDeck.forEach((quote, index) => {
+    cardDeck.forEach((quote) => {
         const card = document.createElement('div');
         card.classList.add('memory-card');
         card.innerHTML = `
@@ -286,50 +288,58 @@
             confetti.classList.add('confetti');
             confetti.style.left = `${Math.random() * 100}vw`;
             confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
-            confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
             document.body.appendChild(confetti);
-            setTimeout(() => {
+
+            // Remove confetti after animation
+            confetti.addEventListener('animationend', () => {
                 confetti.remove();
-            }, 5000);
+            });
         }
     }
 
-    // Show "Next Game" button after all matches are found
+    // Show the next game button
     function showNextGameButton() {
-        const nextGameBtn = document.getElementById('next-game-btn');
-        const overlay = document.getElementById('overlay');
-        
-        nextGameBtn.classList.add('show');
-        overlay.classList.add('show');
-        
-        memoryGame.classList.add('blurred'); // Blur the memory cards
+        document.getElementById('next-game-btn').classList.add('show');
+        document.getElementById('overlay').classList.add('show'); // Show overlay
     }
 
-    // Reset game when all cards are matched
-    function resetGame() {
-        const allCards = document.querySelectorAll('.memory-card');
-        allCards.forEach(card => {
-            card.classList.remove('flipped', 'matched');
-        });
-        shuffle(cardDeck);
-        clearInterval(timerInterval);
-        timer = 0;
+    // Restart the game
+    document.getElementById('next-game-btn').addEventListener('click', () => {
+        // Reset game state
         matchesFound = 0;
+        timer = 0;
+        document.getElementById('timer').textContent = `Time: 0s`;
+        document.querySelector('.memory-game').innerHTML = ''; // Clear game board
+        shuffle(cardDeck); // Shuffle cards again
+
+        // Re-create memory game board
+        cardDeck.forEach((quote) => {
+            const card = document.createElement('div');
+            card.classList.add('memory-card');
+            card.innerHTML = `
+                <div class="inner-card">
+                    <div class="front">?</div>
+                    <div class="back">${quote}</div>
+                </div>
+            `;
+            memoryGame.appendChild(card);
+        });
+
+        document.getElementById('next-game-btn').classList.remove('show'); // Hide next game button
+        document.getElementById('overlay').classList.remove('show'); // Hide overlay
+        startTimer(); // Restart timer
+    });
+
+    // Function to start the timer again
+    function startTimer() {
         timerInterval = setInterval(() => {
             timer++;
             document.getElementById('timer').textContent = `Time: ${timer}s`;
         }, 1000);
     }
 
-    // Attach event listener to each card
-    const allCards = document.querySelectorAll('.memory-card');
-    allCards.forEach(card => card.addEventListener('click', flipCard));
-
-    // Redirect to next game when button is clicked
-    document.getElementById('next-game-btn').addEventListener('click', () => {
-        window.location.href = '/game2'; // Redirect to /game2
-    });
-
+    document.querySelectorAll('.memory-card').forEach(card => card.addEventListener('click', flipCard));
 </script>
+
 </body>
 </html>
