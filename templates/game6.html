@@ -1,299 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spaceship Dodge Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://kit.fontawesome.com/17fd4ade2e.js"></script>
+  <style>
+    :root {
+      --modal-duration: 1s;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #fff;
-            overflow: hidden;
-        }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0, 0, 0, 0.5);
+    }
 
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            background-color: #1e1e1e;
-        }
+    .modal-content {
+      background: #fff;
+      text-align: center;
+      margin: 10% auto;
+      width: 350px;
+      border-radius: 10px;
+      padding: 3rem;
+      box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 7px 20px 0 rgba(0, 0, 0, 0.17);
+      animation-name: modalopen;
+      animation-duration: var(--modal-duration);
+    }
 
-        #spaceship {
-            position: absolute;
-            top: 80%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 80px;
-            background: url('static/spaceship.png') no-repeat center/contain;
-            transition: all 0.3s ease;
-        }
+    .modal-content h1 {
+      margin-bottom: 1rem;
+    }
 
-        .falling-object, .power-up {
-            position: absolute;
-            top: 0;
-            width: 50px;
-            height: 50px;
-            background-size: contain;
-            background-repeat: no-repeat;
-        }
+    .modal-content p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
 
-        #timer, #score, #health {
-            position: absolute;
-            top: 10px;
-            font-size: 24px;
-            color: #fff;
-        }
+    @keyframes modalopen {
+      from {
+        opacity: 0;
+      }
 
-        #timer { left: 10px; }
-        #score { left: 50%; transform: translateX(-50%); }
-        #health { right: 10px; }
+      to {
+        opacity: 1;
+      }
+    }
 
-        /* Loading Screen */
-        #loading-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 32px;
-            z-index: 100;
-            display: none;
-            animation: fade-in-out 3s infinite;
-        }
+    @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
-        /* Cool glow and loading spinner */
-        .spinner {
-            border: 8px solid rgba(255, 255, 255, 0.3);
-            border-top: 8px solid #fff;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            animation: spin 1.5s linear infinite;
-        }
+    :root {
+      --primary-color: #003699;
+      --dark-color: #333333;
+      --light-color: #f4f4f4;
+      --lose-color: #dc3545;
+      --win-color: #28a745;
+    }
 
-        .loading-text {
-            margin-top: 20px;
-            font-size: 24px;
-            animation: glow 1.5s ease-in-out infinite;
-        }
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
 
-        /* Animations */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    body {
+      font-family: 'Roboto', sans-serif;
+      line-height: 1.6;
+      background: #fff;
+      color: #333;
+    }
 
-        @keyframes glow {
-            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-            100% { text-shadow: 0 0 20px rgba(255, 255, 255, 1); }
-        }
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      overflow: hidden;
+      padding: 0 2rem;
+      text-align: center;
+    }
 
-        @keyframes fade-in-out {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
+    .restart-btn {
+      display: none;
+      background: var(--light-color);
+      color: #333;
+      margin-bottom: 1rem;
+      padding: 0.4rem 1.3rem;
+      font-size: 1rem;
+      cursor: pointer;
+      outline: none;
+      border: none;
+      transition-delay: .05s;
+    }
 
-        /* Pulsing effect for the spaceship when shield is activated */
-        .shielded {
-            animation: pulse 1s infinite;
-        }
+    .restart-btn:hover {
+      background: var(--primary-color);
+      color: #fff;
+    }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-    </style>
+    .header {
+      text-align: center;
+      margin: 1rem, 0;
+    }
+
+    .header h1 {
+      margin-bottom: 1rem;
+    }
+
+    .score {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .score p:first-child {
+      background: var(--primary-color);
+    }
+
+    .score p:last-child {
+      background-color: var(--dark-color);
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 2rem;
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .choice {
+      cursor: pointer;
+    }
+
+    .choice:hover {
+      color: var(--primary-color);
+    }
+
+    .text-win {
+      color: var(--win-color);
+    }
+
+    .text-lose {
+      color: var(--lose-color);
+    }
+
+    @media(max-width: 700px) {
+      .choice {
+        font-size: 110px;
+      }
+    }
+
+    @media(max-width: 500px) {
+      .choice {
+        font-size: 80px;
+      }
+    }
+  </style>
+  <title>Rock Paper Scissors</title>
 </head>
 <body>
-    <div id="game-container">
-        <div id="spaceship"></div>
-        <div id="timer">Time: 50</div>
-        <div id="score">Score: 0</div>
-        <div id="health">Health: 3</div>
-        
-        <!-- Loading screen with a spinner -->
-        <div id="loading-screen">
-            <div class="spinner"></div>
-            <div class="loading-text" id="loading-text">Loading...</div>
-        </div>
+  <div class="container">
+    <header class="header">
+      <h1>Rock Paper Scissors</h1>
+      <button id="restart" class="restart-btn">Restart Game</button>
+      <div id="score" class="score">
+        <p>Player: 0</p>
+        <p>Computer: 0</p>
+      </div>
+    </header>
+    <h2>Make Your Selection</h2>
+    <div class="choices">
+      <i id="rock" class="choice fas fa-hand-rock fa-10x"></i>
+      <i id="paper" class="choice fas fa-hand-paper fa-10x"></i>
+      <i id="scissors" class="choice fas fa-hand-scissors fa-10x"></i>
     </div>
+  </div>
 
-    <script>
-        const spaceship = document.getElementById('spaceship');
-        const gameContainer = document.getElementById('game-container');
-        const loadingScreen = document.getElementById('loading-screen');
-        const loadingText = document.getElementById('loading-text');
-        let gameWidth = gameContainer.clientWidth;
-        let gameHeight = gameContainer.clientHeight;
-        let timeRemaining = 50; // 50 seconds
-        let interval;
-        let gameOver = false;
-        let score = 0;
-        let health = 3;
-        let invincible = false;
-        let speedMultiplier = 1;
+  <!-- Modal -->
+  <div class="modal">
+    <div id="result" class="modal-content"></div>
+  </div>
 
-        // Timer countdown
-        function startTimer() {
-            interval = setInterval(() => {
-                timeRemaining--;
-                document.getElementById('timer').innerText = `Time: ${timeRemaining}`;
-                if (timeRemaining <= 0) {
-                    clearInterval(interval);
-                    showLoadingScreen('Calculating your score...', 5000, () => {
-                        window.location.href = "/game10"; // Redirect after win
-                    });
-                }
-            }, 1000);
-        }
+  <script>
+    const choices = document.querySelectorAll('.choice');
+    const score = document.getElementById('score');
+    const result = document.getElementById('result');
+    const restart = document.getElementById('restart');
+    const modal = document.querySelector('.modal');
+    const scoreboard = {
+      player: 0,
+      computer: 0
+    }
 
-        // Moving the spaceship (touch or key controls)
-        function moveSpaceship(e) {
-            const touchX = e.touches ? e.touches[0].clientX : e.clientX;
-            let newLeft = touchX - spaceship.offsetWidth / 2;
+    // Play Game
+    function play(e) {
+      restart.style.display = 'inline-block';
+      const playerChoice = e.target.id;
+      const computerChoice = getComputerChoice();
+      const winner = getWinner(playerChoice, computerChoice);
+      showWinner(winner, computerChoice);
+    }
 
-            if (newLeft < 0) newLeft = 0;
-            if (newLeft > gameWidth - spaceship.offsetWidth) newLeft = gameWidth - spaceship.offsetWidth;
-            
-            spaceship.style.left = `${newLeft}px`;
-        }
+    // Get computers choices
+    function getComputerChoice() {
+      const rand = Math.random();
+      if (rand < 0.34) {
+        return 'rock';
+      } else if (rand <= 0.67) {
+        return 'paper';
+      } else {
+        return 'scissors';
+      }
+    }
 
-        // Collision Detection
-        function detectCollision(fallingObj) {
-            if (invincible) return false;
+    // Get game winner
+    function getWinner(pc, cc) {
+      if(pc === cc) return 'draw';
+      else if (pc === 'rock') {
+        if(cc === 'paper') return 'computer';
+        else return 'player';
+      } else if (pc === 'paper') {
+        if(cc === 'scissors') return 'computer';
+        else return 'player';
+      } else if (pc === 'scissors') {
+        if(cc === 'rock') return 'computer';
+        else return 'player';
+      }
+    }
 
-            const spaceshipRect = spaceship.getBoundingClientRect();
-            const objRect = fallingObj.getBoundingClientRect();
+    // Show winner and check for redirect
+    function showWinner(winner, computerChoice) {
+      if(winner === 'player') {
+        // Inc player score
+        scoreboard.player++;
+        // Show modal result
+        result.innerHTML = `
+          <h1 class="text-win">You Win!</h1>
+          <hr>
+          <i class="fas fa-hand-${computerChoice} fa-10x"></i>
+          <p>Computer chose <strong>${computerChoice.charAt(0).toUpperCase() + computerChoice.slice(1)}</strong></p>
+        `;
+      } else if(winner === 'computer') {
+        // Inc computer score
+        scoreboard.computer++;
+        // Show modal result
+        result.innerHTML = `
+          <h1 class="text-lose">You Lose!</h1>
+          <hr>
+          <i class="fas fa-hand-${computerChoice} fa-10x"></i>
+          <p>Computer chose <strong>${computerChoice.charAt(0).toUpperCase() + computerChoice.slice(1)}</strong></p>
+        `;
+      } else {
+        // Show modal result
+        result.innerHTML = `
+          <h1>It's a Draw!</h1>
+          <hr>
+          <i class="fas fa-hand-${computerChoice} fa-10x"></i>
+          <p>Computer chose <strong>${computerChoice.charAt(0).toUpperCase() + computerChoice.slice(1)}</strong></p>
+        `;
+      }
 
-            return !(
-                spaceshipRect.bottom < objRect.top ||
-                spaceshipRect.top > objRect.bottom ||
-                spaceshipRect.right < objRect.left ||
-                spaceshipRect.left > objRect.right
-            );
-        }
+      // Show score
+      score.innerHTML = `
+        <p>Player: ${scoreboard.player}</p>
+        <p>Computer: ${scoreboard.computer}</p>
+      `;
+      modal.style.display = 'block';
 
-        // Power-up collision detection
-        function collectPowerUp(powerUp) {
-            const spaceshipRect = spaceship.getBoundingClientRect();
-            const powerUpRect = powerUp.getBoundingClientRect();
+      // Check if player score reaches 3 to redirect
+      if(scoreboard.player === 3) {
+        window.location.href = "/game10";  // Redirect to /game10
+      }
+    }
 
-            return !(
-                spaceshipRect.bottom < powerUpRect.top ||
-                spaceshipRect.top > powerUpRect.bottom ||
-                spaceshipRect.right < powerUpRect.left ||
-                spaceshipRect.left > powerUpRect.right
-            );
-        }
+    // Clear modal
+    function clearModal(e) {
+      if(e.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
 
-        // Create falling objects
-        function createFallingObject() {
-            const obj = document.createElement('div');
-            obj.classList.add('falling-object');
+    // Restart Game
+    function restartGame() {
+      scoreboard.player = 0;
+      scoreboard.computer = 0;
+      score.innerHTML = `
+        <p>Player: 0</p>
+        <p>Computer: 0</p>
+      `;
+    }
 
-            // Randomly choose between badshit1.png, badshit2.jpg, and badshit3.jpg
-            const badImages = ['badshit1.png', 'badshit2.jpg', 'badshit3.jpg'];
-            const randomImage = badImages[Math.floor(Math.random() * badImages.length)];
-            obj.style.backgroundImage = `url('static/${randomImage}')`;
-
-            obj.style.left = `${Math.random() * (gameWidth - 50)}px`; // Random X position
-            gameContainer.appendChild(obj);
-
-            let fallInterval = setInterval(() => {
-                let currentTop = parseInt(obj.style.top) || 0;
-                obj.style.top = `${currentTop + 5 * speedMultiplier}px`;
-
-                if (detectCollision(obj)) {
-                    clearInterval(fallInterval);
-                    obj.remove();
-                    health -= 1;
-                    document.getElementById('health').innerText = `Health: ${health}`;
-                    if (health <= 0) {
-                        clearInterval(interval);
-                        showLoadingScreen('Restarting...', 3000, () => {
-                            location.reload(); // Reload the game after losing
-                        });
-                    }
-                } else if (currentTop > gameHeight) {
-                    clearInterval(fallInterval);
-                    obj.remove(); // Remove object when it goes off screen
-                    score++;
-                    document.getElementById('score').innerText = `Score: ${score}`;
-                }
-            }, 20);
-        }
-
-        // Create power-ups (shield)
-        function createPowerUp() {
-            const powerUp = document.createElement('div');
-            powerUp.classList.add('power-up');
-            powerUp.style.backgroundImage = "url('static/shield.png')";
-            powerUp.style.left = `${Math.random() * (gameWidth - 50)}px`; // Random X position
-            gameContainer.appendChild(powerUp);
-
-            let fallInterval = setInterval(() => {
-                let currentTop = parseInt(powerUp.style.top) || 0;
-                powerUp.style.top = `${currentTop + 3}px`;
-
-                if (collectPowerUp(powerUp)) {
-                    clearInterval(fallInterval);
-                    powerUp.remove();
-                    activateShield();
-                } else if (currentTop > gameHeight) {
-                    clearInterval(fallInterval);
-                    powerUp.remove();
-                }
-            }, 20);
-        }
-
-        // Activate shield (invincibility)
-        function activateShield() {
-            invincible = true;
-            spaceship.classList.add('shielded');
-            setTimeout(() => {
-                invincible = false;
-                spaceship.classList.remove('shielded');
-            }, 5000); // Shield lasts for 5 seconds
-        }
-
-        // Show loading screen with optional message and timeout
-        function showLoadingScreen(message, timeout, callback) {
-            loadingText.innerText = message;
-            loadingScreen.style.display = 'flex';
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-                if (callback) callback();
-            }, timeout);
-        }
-
-        // Initialize game
-        function startGame() {
-            showLoadingScreen('Loading...', 2000, () => {
-                loadingScreen.style.display = 'none';
-                startTimer();
-                setInterval(createFallingObject, 1000); // Create falling objects every second
-                setInterval(createPowerUp, 7000); // Create power-ups every 7 seconds
-            });
-        }
-
-        // Event listeners for touch and key controls
-        window.addEventListener('mousemove', moveSpaceship);
-        window.addEventListener('touchmove', moveSpaceship);
-        startGame();
-    </script>
+    // Event Listeners
+    choices.forEach(choice => choice.addEventListener('click', play));
+    window.addEventListener('click', clearModal);
+    restart.addEventListener('click', restartGame);
+  </script>
 </body>
 </html>
